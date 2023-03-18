@@ -98,8 +98,6 @@ def process_images(src_images, indir, outdir, config):
 
 
 def main(args):
-    from nb_utils.file_dir_handling import list_files
-    
     if not args.indir.endswith('/'):
         args.indir += '/'
 
@@ -107,19 +105,7 @@ def main(args):
 
     config = load_yaml(args.config)
 
-    # in_files = list(glob.glob(os.path.join(args.indir, '**', f'*.{args.ext}'), recursive=True))
-    # print(f"args.indir: {args.indir}")
-    if not os.path.exists(args.indir):
-        print(f"Error .. Input directory not exists: {args.indir}")
-        return 
-
-    in_files = list_files(
-        args.indir, 
-        filter_ext=[".jpg", ".jpeg", ".png"], 
-    )
-    # print(f"in_files: {in_files}")
-    print(f"Total input files: {len(in_files)}")
-
+    in_files = list(glob.glob(os.path.join(args.indir, '**', f'*.{args.ext}'), recursive=True))
     if args.n_jobs == 0:
         process_images(in_files, args.indir, args.outdir, config)
     else:
@@ -129,7 +115,7 @@ def main(args):
             delayed(process_images)(in_files[start:start+chunk_size], args.indir, args.outdir, config)
             for start in range(0, len(in_files), chunk_size)
         )
-    print(f"Done!")
+
 
 if __name__ == '__main__':
     import argparse
