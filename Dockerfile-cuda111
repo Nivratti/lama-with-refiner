@@ -38,7 +38,7 @@ RUN pip install numpy scipy opencv-python tensorflow joblib matplotlib pandas \
 USER root
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y git
+    apt-get install -y git curl
 
 USER $USERNAME:$USERNAME
 
@@ -46,6 +46,11 @@ RUN pip install 'git+https://github.com/facebookresearch/detectron2.git'
 
 RUN pip install -U scikit-image
 RUN pip install -U nb-utils
+
+# model auto download
+RUN pip install wldhx.yadisk-direct
+RUN curl -L $(yadisk-direct https://disk.yandex.ru/d/ouP6l8VJ0HpMZg) -o big-lama.zip
+RUN unzip big-lama.zip
 
 ### - new end
 
