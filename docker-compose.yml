@@ -1,0 +1,40 @@
+## To build:
+## sudo docker compose build
+##
+## To connect
+## sudo docker compose run lama_docker_compose  bash
+
+version: '2.3'
+services:
+  lama_docker_compose:
+    tty: true
+    image: lama_docker_compose:latest
+    container_name: lama_docker_compose
+    volumes:
+      # - ./data:/app
+      - ./:/home/user/app
+    # user: user # as per dockerfile # root
+    build:
+      context: . # build
+      dockerfile: Dockerfile-cuda111
+    ipc: host
+    restart: 'no' # unless-stopped     # or "always"
+    stdin_open: true
+    working_dir: "/home/user/app"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HOME=/home/user
+      - PATH=/home/user/miniconda/bin:$PATH ## to make python command visible of conda in compose
+      - PYTHONPATH=/home/user/miniconda/bin:$PYTHONPATH
+    command: bash
+    entrypoint: ""
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities:
+              - gpu
+              - utility # nvidia-smi
+              - compute # CUDA. Required to avoid "CUDA version: N/A"
