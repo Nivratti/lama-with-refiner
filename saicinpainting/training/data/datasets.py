@@ -21,10 +21,17 @@ from saicinpainting.training.data.masks import get_mask_generator
 
 LOGGER = logging.getLogger(__name__)
 
+from nb_utils.file_dir_handling import list_files
+
 
 class InpaintingTrainDataset(Dataset):
     def __init__(self, indir, mask_generator, transform):
-        self.in_files = list(glob.glob(os.path.join(indir, '**', '*.jpg'), recursive=True))
+        # self.in_files = list(glob.glob(os.path.join(indir, '**', '*.jpg'), recursive=True))
+        self.in_files = list_files(
+            indir, 
+            filter_ext=[".jpg", ".jpeg", ".png"], 
+        )
+        # print(f"self.in_files: {self.len(in_files)}")
         self.mask_generator = mask_generator
         self.transform = transform
         self.iter_i = 0
@@ -288,7 +295,7 @@ def make_default_val_dataloader(*args, dataloader_kwargs=None, **kwargs):
     dataloader = DataLoader(dataset, **dataloader_kwargs)
     return dataloader
 
-
+ 
 def make_constant_area_crop_params(img_height, img_width, min_size=128, max_size=512, area=256*256, round_to_mod=16):
     min_size = min(img_height, img_width, min_size)
     max_size = min(img_height, img_width, max_size)

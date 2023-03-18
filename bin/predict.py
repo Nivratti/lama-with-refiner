@@ -62,6 +62,10 @@ def main(predict_config: OmegaConf):
         if not predict_config.indir.endswith('/'):
             predict_config.indir += '/'
 
+        if not os.path.exists(predict_config.indir):
+            print(f"Error .. Input directory not exists: {predict_config.indir}")
+            return 
+
         dataset = make_default_val_dataset(predict_config.indir, **predict_config.dataset)
         for img_i in tqdm.trange(len(dataset)):
             mask_fname = dataset.mask_filenames[img_i]
