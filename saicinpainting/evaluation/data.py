@@ -8,6 +8,8 @@ import numpy as np
 from torch.utils.data import Dataset
 import torch.nn.functional as F
 
+from nb_utils.file_dir_handling import list_files
+
 
 def load_image(fname, mode='RGB', return_orig=False):
     img = np.array(Image.open(fname).convert(mode))
@@ -58,8 +60,23 @@ def scale_image(img, factor, interpolation=cv2.INTER_AREA):
 class InpaintingDataset(Dataset):
     def __init__(self, datadir, img_suffix='.jpg', pad_out_to_modulo=None, scale_factor=None):
         self.datadir = datadir
-        self.mask_filenames = sorted(list(glob.glob(os.path.join(self.datadir, '**', '*mask*.png'), recursive=True)))
-        self.img_filenames = [fname.rsplit('_mask', 1)[0] + img_suffix for fname in self.mask_filenames]
+        # self.mask_filenames = sorted(list(glob.glob(os.path.join(self.datadir, '**', '*mask*.png'), recursive=True)))
+        # self.img_filenames = [fname.rsplit('_mask', 1)[0] + img_suffix for fname in self.mask_filenames]
+        self.mask_filenames = list_files(
+            self.datadir, 
+            filter_ext=[".jpg", ".jpeg", ".png"], 
+        )
+        print(f"len(self.mask_filenames): {len(self.mask_filenames)}")
+        self.img_filenames = []
+        for fname in self.mask_filenames:
+            # first check is image file exists with _orig postfix
+            image_file_path = fname.replace("_mask", "_orig")
+            if not os.path.exists(image_file_path):
+                image_file_path = fname.replace("_mask", "")
+                if not image_file_path:
+                    print(f"Error.. Image file: {image_file_path} not exists on disk..")
+            self.img_filenames.append(image_file_path)
+
         self.pad_out_to_modulo = pad_out_to_modulo
         self.scale_factor = scale_factor
 
