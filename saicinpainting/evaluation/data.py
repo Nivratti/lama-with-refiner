@@ -62,11 +62,13 @@ class InpaintingDataset(Dataset):
         self.datadir = datadir
         # self.mask_filenames = sorted(list(glob.glob(os.path.join(self.datadir, '**', '*mask*.png'), recursive=True)))
         # self.img_filenames = [fname.rsplit('_mask', 1)[0] + img_suffix for fname in self.mask_filenames]
-        self.mask_filenames = list_files(
+        lst_all_images = list_files(
             self.datadir, 
             filter_ext=[".jpg", ".jpeg", ".png"], 
         )
+        self.mask_filenames = [fname for fname in lst_all_images if "_mask" in fname]
         print(f"len(self.mask_filenames): {len(self.mask_filenames)}")
+
         self.img_filenames = []
         for fname in self.mask_filenames:
             # first check is image file exists with _orig postfix
