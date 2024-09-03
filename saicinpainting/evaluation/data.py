@@ -74,9 +74,11 @@ class InpaintingDataset(Dataset):
             # first check is image file exists with _orig postfix
             image_file_path = fname.replace("_mask", "_orig")
             if not os.path.exists(image_file_path):
-                image_file_path = fname.replace("_mask", "")
-                if not image_file_path:
-                    print(f"Error.. Image file: {image_file_path} not exists on disk..")
+                image_file_path = fname.replace("_mask000", "") # if data generated using bin/gen_mask_dataset_v2
+                if not os.path.exists(image_file_path):
+                    image_file_path = fname.replace("_mask", "")
+                    if not image_file_path:
+                        print(f"Error.. Image file: {image_file_path} not exists on disk..")
             self.img_filenames.append(image_file_path)
 
         self.pad_out_to_modulo = pad_out_to_modulo

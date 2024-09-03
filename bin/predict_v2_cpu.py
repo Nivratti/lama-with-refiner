@@ -11,6 +11,13 @@ import os
 import sys
 import traceback
 
+# Get the grandparent directory of the current script
+grandparent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Add the grandparent directory to sys.path
+if grandparent_dir not in sys.path:
+    sys.path.insert(0, grandparent_dir)
+    
 from saicinpainting.evaluation.utils import move_to_device
 from saicinpainting.evaluation.refinement import refine_predict
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -72,6 +79,8 @@ def main(predict_config: OmegaConf):
         dataset = make_default_val_dataset(predict_config.indir, **predict_config.dataset)
         for img_i in tqdm.trange(len(dataset)):
             mask_fname = dataset.mask_filenames[img_i]
+            # print(f"mask_fname: {mask_fname}")
+            
             try:
                 # cur_out_fname = os.path.join(
                 #     predict_config.outdir, 
