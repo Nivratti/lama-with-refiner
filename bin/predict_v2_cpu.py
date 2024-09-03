@@ -41,6 +41,7 @@ from saicinpainting.utils import register_debug_signal_handlers
 
 from pathlib import Path
 from nb_utils.error_handling import trace_error
+import shutil
 
 LOGGER = logging.getLogger(__name__)
 
@@ -76,11 +77,17 @@ def main(predict_config: OmegaConf):
             print(f"Error .. Input directory not exists: {predict_config.indir}")
             return 
 
+        # to aboid any conflicts later -- in mask filenames
+        if "_mask" in predict_config.indir:
+            print(f"Error .. Please don't use `_mask` word in input dir. please rename it and run again")
+            return 
+        
         dataset = make_default_val_dataset(predict_config.indir, **predict_config.dataset)
         for img_i in tqdm.trange(len(dataset)):
             mask_fname = dataset.mask_filenames[img_i]
             # print(f"mask_fname: {mask_fname}")
-            
+            # print(f"dataset.img_filenames[img_i]: {dataset.img_filenames[img_i]}")
+
             try:
                 # cur_out_fname = os.path.join(
                 #     predict_config.outdir, 
@@ -91,7 +98,8 @@ def main(predict_config: OmegaConf):
 
                 # store output file with _tampered postfix
                 rel_out_filename = mask_fname_relative.replace("_mask", "_tampered")
-                cur_out_fname = os.path.join(predict_config.indir, rel_out_filename)
+                # cur_out_fname = os.path.join(predict_config.indir, rel_out_filename)
+                cur_out_fname = os.path.join(predict_config.outdir, rel_out_filename)
 
                 if os.path.exists(cur_out_fname):
                     # print(f"Output file {cur_out_fname} already exists.. Skipping it")
@@ -120,6 +128,18 @@ def main(predict_config: OmegaConf):
                 cur_res = np.clip(cur_res * 255, 0, 255).astype('uint8')
                 cur_res = cv2.cvtColor(cur_res, cv2.COLOR_RGB2BGR)
                 cv2.imwrite(cur_out_fname, cur_res)
+                
+                # update 03 sept 2024
+                # copy image
+                inp_img_filepath = dataset.img_filenames[img_i]
+                inp_img_path_obj = Path(inp_img_filepath)
+                img_relative_path = inp_img_path_obj.relative_to(predict_config.indir)
+                # Add `_original postfix` to the filename (before the extension)
+                new_img_relative_path = Path(img_relative_path).with_name(inp_img_path_obj.stem + '_original' + inp_img_path_obj.suffix)
+
+                shutil.copy2(inp_img_filepath, os.path.join(predict_config.outdir, new_img_relative_path))
+                shutil.copy2(mask_fname, os.path.join(predict_config.outdir, mask_fname_relative))
+
             except Exception as e:
                 err_msg = trace_error()
                 print(f"Error imapting image of mask {mask_fname}: {err_msg}")
