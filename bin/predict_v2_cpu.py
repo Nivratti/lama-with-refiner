@@ -134,9 +134,16 @@ def main(predict_config: OmegaConf):
                 inp_img_filepath = dataset.img_filenames[img_i]
                 inp_img_path_obj = Path(inp_img_filepath)
                 img_relative_path = inp_img_path_obj.relative_to(predict_config.indir)
-                # Add `_original postfix` to the filename (before the extension)
-                new_img_relative_path = Path(img_relative_path).with_name(inp_img_path_obj.stem + '_original' + inp_img_path_obj.suffix)
+                # # Add `_original postfix` to the filename (before the extension)
+                # new_img_relative_path = Path(img_relative_path).with_name(inp_img_path_obj.stem + '_original' + inp_img_path_obj.suffix)
 
+                # update 07/10/2024
+                # Add `_orig postfix` to the filename if not exists (before the extension)
+                if "_orig." not in inp_img_filepath.lower():
+                    new_img_relative_path = Path(img_relative_path).with_name(inp_img_path_obj.stem + '_orig' + inp_img_path_obj.suffix)
+                else:
+                    new_img_relative_path = Path(img_relative_path)
+                    
                 shutil.copy2(inp_img_filepath, os.path.join(predict_config.outdir, new_img_relative_path))
                 shutil.copy2(mask_fname, os.path.join(predict_config.outdir, mask_fname_relative))
 
